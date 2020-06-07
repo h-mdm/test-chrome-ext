@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-var webPort = chrome.runtime.connect();
+var webPort = null;
 var nativePort = null;
 
 function sendNativeMessage(text) {
@@ -26,20 +26,15 @@ function connect() {
   nativePort.onDisconnect.addListener(onDisconnected);
 }
 
-window.addEventListener("message", function(event) {
-    // We only accept messages from ourselves
-    if (event.source != window || !event.data.type) {
-        return;
-	}
-
-    console.log("Content script received message, type: " + event.data.type);
-    if (event.data.type === "connect") {
-	    connect();
-	} else if (event.data.type === "send") {
-	    sendNativeMessage(event.data.text);
-	}
-}, false);
-
-document.body.setAttribute('extension-installed', true);
-
+chrome.runtime.onConnectExternal.addListener(function(port) {
+	webPort = port;
+    port.onMessage.addListener(function(message) {
+        console.log("Background script received message, type: " + message.type);
+        if (message.type === "connect") {
+	        connect();
+	    } else if (message.type === "send") {
+	        sendNativeMessage(message.text);
+	    }
+    });
+});
 

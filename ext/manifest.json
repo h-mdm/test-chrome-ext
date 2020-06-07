@@ -5,12 +5,19 @@
   "version": "1.0",
   "manifest_version": 2,
   "description": "Send a message to a native application.",
+  "background": {
+    "scripts": ["background.js"],
+    "persistent": false
+  },
   "content_scripts": [
     {
-      "matches": ["<all_urls>"],
-      "js": ["main.js"]
+      "matches": ["*://h-mdm.com/*"],
+      "js": ["content.js"]
     }
   ],
+  "externally_connectable": {
+      "matches": ["*://h-mdm.com/*"]
+  },
   "icons": {
     "128": "icon-128.png"
   },

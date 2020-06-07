@@ -2,23 +2,28 @@ function isInstalled() {
     return document.body.getAttribute('extension-installed');
 }
 
+var extensionId = "knldjmfmopnpolahpmmgbagdohdnhkik";
+var extensionPort = chrome.runtime.connect(extensionId);
+
 function connectApp() {
-	window.postMessage({ type: "connect" }, "*");
+	extensionPort.postMessage({ type: "connect" }, "*");
 }
 
 function sendMessage(message) {
-	window.postMessage({ type: "send", text: message }, "*");
+	extensionPort.postMessage({ type: "send", text: message }, "*");
 }
 
 var receiveMessagesHandler = null;
 var connectErrorHandler = null;
 
-function processRawMessages(event) {
-    if (event.data.type === 'response' && receiveMessagesHandler !== null) {
-		receiveMessagesHandler(event.data.text);
-	} else if (event.data.type === 'connect-error' && connectErrorHandler !== null) {
-		connectErrorHandler(event.data.text);
+function processRawMessages(message) {
+    if (message.type === 'response' && receiveMessagesHandler !== null) {
+		receiveMessagesHandler(message.text);
+	} else if (message.type === 'connect-error' && connectErrorHandler !== null) {
+		connectErrorHandler(message.text);
 	}
 }
 
-window.addEventListener("message", processRawMessages, false);
+extensionPort.onMessage.addListener(function(message) {
+    processRawMessages(message);
+});
